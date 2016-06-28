@@ -1,0 +1,12 @@
+[template]
+prefix = "/self"
+src = "etcd-source.tmpl"
+dest = "/opt/etcd/etc/etcd-source"
+owner = "etcd"
+mode = "0644"
+keys = [
+  "/container",
+  "/service",
+]
+
+#reload_cmd = "/opt/etcd/bin/etcd-service.sh restart"
