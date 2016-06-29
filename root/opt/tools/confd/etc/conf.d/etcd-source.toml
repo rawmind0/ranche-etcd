@@ -9,4 +9,4 @@ keys = [
   "/service",
 ]
 
-#reload_cmd = "/opt/etcd/bin/etcd-service.sh restart"
+reload_cmd = "/opt/etcd/bin/etcd-update.sh"
