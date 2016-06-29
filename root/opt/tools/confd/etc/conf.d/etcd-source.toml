@@ -9,4 +9,3 @@ keys = [
   "/service",
 ]
 
-reload_cmd = "/opt/etcd/bin/etcd-update.sh"

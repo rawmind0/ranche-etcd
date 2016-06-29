@@ -11,7 +11,7 @@ docker build -t rawmind/rancher-etcd:<version> .
 
 ## Versions
 
-- `2.3.7-1` [(Dockerfile)](https://github.com/rawmind0/rancher-etcd/blob/2.3.7-1/README.md)
+- `2.3.7-2` [(Dockerfile)](https://github.com/rawmind0/rancher-etcd/blob/2.3.7-2/README.md)
 
 
 ## Usage
