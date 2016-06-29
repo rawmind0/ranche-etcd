@@ -11,13 +11,20 @@ my_service={{getv "/container/service_name"}}
 my_stack={{getv "/container/stack_name"}}
 my_status={{getv "/container/health_state"}}
 my_endpoint='http://{{getv "/container/service_name"}}:2379'
-my_info=\$(etcdctl --endpoints=\$my_endpoint member list | grep -w \$my_ip | grep -v grep)
-rc=\$(echo \$?)
-my_id=\$(echo \$my_info | cut -d":" -f1)
-cluster_healthy=\$(curl -sL \$my_endpoint/health | cut -d"\"" -f4)
+cluster_member_list=\$(etcdctl --endpoints=\$my_endpoint member list)
+cluster_member_rc=\$(echo \$?)
+
+if [ \$cluster_member_rc -eq 0 ];then
+	my_info=\$(echo \$cluster_member_list | grep -w \$my_ip | grep -v grep)
+	my_rc=\$(echo \$?)
+	my_id=\$(echo \$my_info | cut -d":" -f1)
+	cluster_healthy=\$(curl -sL \$my_endpoint/health | cut -d"\"" -f4)
+else
+    cluster_healthy="new"
+fi
 
 function log {
-        echo `date` \$ME - $@
+        echo `date` \$ME - \$@
 }
 
 function addMember {
@@ -36,13 +43,15 @@ export ETCD_INITIAL_ADVERTISE_PEER_URLS=\${ETCD_INITIAL_ADVERTISE_PEER_URLS:-"ht
 export ETCD_INITIAL_CLUSTER=\${ETCD_INITIAL_CLUSTER:-'{{range \$i, \$containerName := ls "/service/containers"}}{{if \$i}},{{end}}{{getv (printf "/service/containers/%s/name" \$containerName)}}=http://{{getv (printf "/service/containers/%s/primary_ip" \$containerName)}}:2380{{end}}'}
 
 if [ "x\$cluster_healthy" == "xtrue" ] || [ "x\$cluster_healthy" == "xfalse" ];then
-        ETCD_INITIAL_CLUSTER_STATE="existing"
-        if [ \$rc -eq 1 ]; then
-                addMember
-        fi
+    ETCD_INITIAL_CLUSTER_STATE="existing"
+    if [ \$rc -eq 1 ]; then
+        addMember
+    fi
+else 
+	ETCD_INITIAL_CLUSTER_STATE="new"
 fi
 
-export ETCD_INITIAL_CLUSTER_STATE=\${ETCD_INITIAL_CLUSTER_STATE:-"new"}
+export ETCD_INITIAL_CLUSTER_STATE=\${ETCD_INITIAL_CLUSTER_STATE}
 export ETCD_INITIAL_CLUSTER_TOKEN=\${ETCD_INITIAL_CLUSTER_TOKEN:-"\$my_service-\$my_stack"}
 export ETCD_NAME=\${ETCD_NAME:-"\$my_name"}
 export ETCD_LISTEN_PEER_URLS=\${ETCD_LISTEN_PEER_URLS:-"http://\$my_ip:2380"}
