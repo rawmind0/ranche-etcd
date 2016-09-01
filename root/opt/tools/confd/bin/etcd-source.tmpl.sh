@@ -1,8 +1,19 @@
 #!/usr/bin/env bash
 
-SERVICE_TMPL=${SERVICE_TMPL:-"/opt/tools/confd/etc/templates/etcd-source.tmpl"}
+cat << EOF > ${SERVICE_VOLUME}/confd/etc/conf.d/etcd-source
+[template]
+prefix = "/self"
+src = "etcd-source.tmpl"
+dest = "${SERVICE_HOME}/etc/etcd-source"
+owner = "${SERVICE_USER}"
+mode = "0644"
+keys = [
+  "/container",
+  "/service",
+]
+EOF
 
-cat << EOF > ${SERVICE_TMPL}
+cat << EOF > ${SERVICE_VOLUME}/confd/etc/templates/etcd-source.tmpl
 #!/usr/bin/env bash
 
 my_ip={{getv "/container/primary_ip"}}
