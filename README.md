@@ -1,3 +1,5 @@
+[![](https://images.microbadger.com/badges/image/rawmind/rancher-etcd.svg)](https://microbadger.com/images/rawmind/rancher-etcd "Get your own image badge on microbadger.com")
+
 rancher-etcd
 ==============
 
@@ -11,7 +13,7 @@ docker build -t rawmind/rancher-etcd:<version> .
 
 ## Versions
 
-- `2.3.7-2` [(Dockerfile)](https://github.com/rawmind0/rancher-etcd/blob/2.3.7-2/README.md)
+- `2.3.7-3` [(Dockerfile)](https://github.com/rawmind0/rancher-etcd/blob/2.3.7-3/README.md)
 
 
 ## Usage
