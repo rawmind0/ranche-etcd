@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cat << EOF > ${SERVICE_VOLUME}/confd/etc/conf.d/etcd-source
+cat << EOF > ${SERVICE_VOLUME}/confd/etc/conf.d/etcd-source.toml
 [template]
 prefix = "/self"
 src = "etcd-source.tmpl"
