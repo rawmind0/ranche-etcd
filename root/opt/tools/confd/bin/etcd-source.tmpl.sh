@@ -55,7 +55,7 @@ export ETCD_INITIAL_CLUSTER=\${ETCD_INITIAL_CLUSTER:-'{{range \$i, \$containerNa
 
 if [ "x\$cluster_healthy" == "xtrue" ] || [ "x\$cluster_healthy" == "xfalse" ];then
     ETCD_INITIAL_CLUSTER_STATE="existing"
-    if [ \$rc -eq 1 ]; then
+    if [ \$my_rc -eq 1 ]; then
         addMember
     fi
 else 
