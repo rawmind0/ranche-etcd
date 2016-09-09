@@ -28,6 +28,7 @@ function waitDeploy {
     while [ \${current_rep} -ne \${wanted_rep} ]; do
         log "\${current_rep} of \${wanted_rep} started containers....waiting..."
         sleep 3
+        current_rep=\$(curl -Ss \${CONF_URL}/self/service/containers | wc -l)
     done
 } 
 
