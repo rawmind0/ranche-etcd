@@ -16,23 +16,20 @@ EOF
 cat << EOF > ${SERVICE_VOLUME}/confd/etc/templates/etcd-source.tmpl
 #!/usr/bin/env bash
 
-my_ip={{getv "/container/primary_ip"}}
-my_name={{getv "/container/name"}}
-my_service={{getv "/container/service_name"}}
-my_stack={{getv "/container/stack_name"}}
-my_status={{getv "/container/health_state"}}
-my_endpoint='http://{{getv "/container/service_name"}}:2379'
-cluster_member_list=\$(etcdctl --endpoints=\$my_endpoint member list)
-cluster_member_rc=\$(echo \$?)
+function waitDeploy {
+    CONF_PREFIX=\${CONF_PREFIX:-"/2015-12-19"}
+    CONF_URL="http://rancher-metadata.rancher.internal\${CONF_PREFIX}"
 
-if [ \$cluster_member_rc -eq 0 ];then
-	my_info=\$(echo \$cluster_member_list | grep -w \$my_ip | grep -v grep)
-	my_rc=\$(echo \$?)
-	my_id=\$(echo \$my_info | cut -d":" -f1)
-	cluster_healthy=\$(curl -sL \$my_endpoint/health | cut -d"\"" -f4)
-else
-    cluster_healthy="new"
-fi
+    log "[ Checking replicas are started ... ]"
+
+    current_rep=\$(curl -Ss \${CONF_URL}/self/service/containers | wc -l)
+    wanted_rep=\$(curl -Ss \${CONF_URL}/self/service/scale)
+
+    while [ \${current_rep} -ne \${wanted_rep} ]; do
+        log "\${current_rep} of \${wanted_rep} started containers....waiting..."
+        sleep 3
+    done
+} 
 
 function log {
         echo `date` \$ME - \$@
@@ -47,6 +44,26 @@ function removeMember {
     log "[ Removing $my_name node to cluster... ]"
     etcdctl --endpoints=\$my_endpoint member remove \$my_id
 }
+
+waitDeploy
+
+my_ip={{getv "/container/primary_ip"}}
+my_name={{getv "/container/name"}}
+my_service={{getv "/container/service_name"}}
+my_stack={{getv "/container/stack_name"}}
+my_status={{getv "/container/health_state"}}
+my_endpoint='http://{{getv "/container/service_name"}}:2379'
+cluster_member_list=\$(etcdctl --endpoints=\$my_endpoint member list)
+cluster_member_rc=\$(echo \$?)
+
+if [ \$cluster_member_rc -eq 0 ];then
+    my_info=\$(echo \$cluster_member_list | grep -w \$my_ip | grep -v grep)
+    my_rc=\$(echo \$?)
+    my_id=\$(echo \$my_info | cut -d":" -f1)
+    cluster_healthy=\$(curl -sL \$my_endpoint/health | cut -d"\"" -f4)
+else
+    cluster_healthy="new"
+fi
 
 export ETCD_ADVERTISE_CLIENT_URLS=\${ETCD_ADVERTISE_CLIENT_URLS:-"http://\$my_ip:2379"}
 export ETCD_DATA_DIR=\${ETCD_DATA_DIR:-\${SERVICE_HOME}"/data"}
